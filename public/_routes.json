@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "description": "Static files are served by Pages directly; everything else may be a short code or the API.",
+  "include": ["/*"],
+  "exclude": ["/assets/*", "/favicon.svg"]
+}
