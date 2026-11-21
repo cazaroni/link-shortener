@@ -1,7 +1,8 @@
 import { CODE_PATTERN } from '../shared/api.ts';
 import type { Env } from './_lib/env.ts';
 import { isReservedCode } from './_lib/codes.ts';
-import { findDestination, recordClick } from './_lib/links.ts';
+import { trackClick } from './_lib/clicks.ts';
+import { findDestination } from './_lib/links.ts';
 import { isSafeRedirectTarget } from './_lib/validation.ts';
 
 const HTML_HEADERS = {
@@ -76,14 +77,11 @@ async function handle(context: EventContext<Env, 'code', Record<string, unknown>
     return notFound(request, env);
   }
 
-  // Count after responding so the redirect isn't delayed. HEAD requests (link previews,
-  // uptime checks) are answered but not counted.
+  // Count after responding so the redirect isn't delayed: the counter bump and the telemetry row
+  // are written in one batch, and a failure there is logged but never affects the redirect.
+  // HEAD requests (link previews, uptime checks) are answered but not counted.
   if (request.method === 'GET') {
-    context.waitUntil(
-      recordClick(env.DB, code).catch((error: unknown) => {
-        console.error(`Failed to record a click for "${code}":`, error);
-      }),
-    );
+    context.waitUntil(trackClick(env.DB, code, request));
   }
 
   return new Response(null, {
