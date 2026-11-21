@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
+import { CreateLinkForm } from './CreateLinkForm'
 import { TabPanel, Tabs, type TabItem } from './Tabs'
 
 type TabId = 'create' | 'links'
@@ -28,6 +29,10 @@ export function Dashboard() {
           <h2 className="panel-heading" id={`${idPrefix}-create-heading`}>
             Create a short link
           </h2>
+          <p className="panel-lead">Paste the address you want to share. Add your own alias if you like.</p>
+          <div className="panel-body">
+            <CreateLinkForm onCreated={() => {}} onViewLinks={() => setTab('links')} />
+          </div>
         </section>
       </TabPanel>
 
