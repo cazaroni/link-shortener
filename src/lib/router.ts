@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { SPA_ROUTES } from '../../shared/api'
 import { isDashboardPath } from './route'
 
 /**
@@ -12,13 +13,15 @@ export type AppRoute = NavRoute | 'not-found'
 /** Paths of the views that appear in the main navigation. */
 export const ROUTE_PATHS: Record<NavRoute, string> = {
   links: '/',
-  analytics: '/analytics',
+  // The server serves SPA_ROUTES with 200 (functions/[code].ts); keep the client path derived from it.
+  analytics: `/${SPA_ROUTES[0]}`,
 }
 
 /** "/" is the links dashboard, "/analytics" the analytics view, anything else is a short code that wasn't found. */
 export function routeForPath(pathname: string): AppRoute {
   if (isDashboardPath(pathname)) return 'links'
-  const normalized = pathname.replace(/\/+$/, '')
+  // One optional trailing slash, matching the server (which 404s on "/analytics//"). Case-sensitive, like the server.
+  const normalized = pathname.replace(/\/$/, '')
   return normalized === ROUTE_PATHS.analytics ? 'analytics' : 'not-found'
 }
 
