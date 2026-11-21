@@ -72,7 +72,7 @@ async function handle(context: EventContext<Env, 'code', Record<string, unknown>
   if (!CODE_PATTERN.test(code)) return notFound(request, env);
 
   const destination = await findDestination(env.DB, code);
-  if (destination === null || !isSafeRedirectTarget(destination)) {
+  if (destination === null || !isSafeRedirectTarget(destination, new URL(request.url).hostname)) {
     return notFound(request, env);
   }
 
