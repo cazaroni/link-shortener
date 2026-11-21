@@ -15,7 +15,7 @@ const fail = (code: ApiErrorCode, message: string): { ok: false; code: ApiErrorC
 // ---------------------------------------------------------------------------
 
 /** Hostnames that only ever mean "this machine / this network". */
-const LOCAL_HOST_SUFFIXES = ['.localhost', '.local', '.internal'];
+const LOCAL_HOST_SUFFIXES = ['.localhost', '.local', '.internal', '.localdomain', '.home.arpa'];
 
 function isPrivateIPv4(octets: readonly number[]): boolean {
   const [a, b] = octets;
@@ -27,6 +27,7 @@ function isPrivateIPv4(octets: readonly number[]): boolean {
     (a === 169 && b === 254) || // link-local (cloud metadata lives here)
     (a === 172 && b >= 16 && b <= 31) || // 172.16.0.0/12
     (a === 192 && b === 168) || // 192.168.0.0/16
+    (a === 198 && (b === 18 || b === 19)) || // 198.18.0.0/15 benchmarking
     a >= 224 // multicast, reserved and broadcast
   );
 }
@@ -79,7 +80,28 @@ function isLocalOrPrivateHost(hostname: string): boolean {
   if (ipv4) {
     return isPrivateIPv4(ipv4.slice(1).map(Number));
   }
-  return host === 'localhost' || LOCAL_HOST_SUFFIXES.some((suffix) => host.endsWith(suffix));
+  // Single-label names ("localhost", "intranet", "router") only resolve on a local network.
+  if (!host.includes('.')) return true;
+  return LOCAL_HOST_SUFFIXES.some((suffix) => host.endsWith(suffix));
+}
+
+const normalizeHost = (hostname: string): string => hostname.toLowerCase().replace(/\.$/, '');
+
+/**
+ * True if `hostname` is served by this app, so a redirect to it could loop back here: the
+ * app's own hostname and, on Cloudflare Pages, every preview/branch alias of the same project
+ * (`<anything>.<project>.pages.dev`), which share the same D1 database.
+ */
+export function isOwnHost(hostname: string, ownHostname: string): boolean {
+  const host = normalizeHost(hostname);
+  const own = normalizeHost(ownHostname);
+  if (host === own) return true;
+  const labels = own.split('.');
+  if (own.endsWith('.pages.dev') && labels.length >= 3) {
+    const project = labels.slice(-3).join('.');
+    return host === project || host.endsWith(`.${project}`);
+  }
+  return false;
 }
 
 /**
@@ -118,8 +140,8 @@ export function validateDestinationUrl(input: unknown, ownHostname: string): Val
     );
   }
 
-  const hostname = url.hostname.toLowerCase().replace(/\.$/, '');
-  if (hostname === ownHostname.toLowerCase().replace(/\.$/, '')) {
+  const hostname = normalizeHost(url.hostname);
+  if (isOwnHost(hostname, ownHostname)) {
     return fail(
       'UNSAFE_URL',
       'That link already points to this site, so shortening it would create a redirect loop. Please enter a different web address.',
@@ -137,11 +159,16 @@ export function validateDestinationUrl(input: unknown, ownHostname: string): Val
   return { ok: true, value: url.href };
 }
 
-/** Re-checks a stored destination before redirecting to it (defence in depth). */
-export function isSafeRedirectTarget(stored: string): boolean {
+/**
+ * Re-checks a stored destination before redirecting to it (defence in depth). With
+ * `ownHostname`, destinations served by this app are refused too: a link created on one
+ * hostname (e.g. production) can point at another alias of the app and loop.
+ */
+export function isSafeRedirectTarget(stored: string, ownHostname?: string): boolean {
   try {
-    const { protocol } = new URL(stored);
-    return protocol === 'http:' || protocol === 'https:';
+    const { protocol, hostname } = new URL(stored);
+    if (protocol !== 'http:' && protocol !== 'https:') return false;
+    return ownHostname === undefined || !isOwnHost(hostname, ownHostname);
   } catch {
     return false;
   }

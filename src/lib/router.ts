@@ -1,21 +1,25 @@
 import { useSyncExternalStore } from 'react'
+import { isDashboardPath } from './route'
 
 /**
- * Minimal client-side router: two top-level views and pushState navigation.
- * The server answers every reserved single-segment path (including /analytics) with the SPA shell,
- * so a direct load or a reload of any of these paths works.
+ * Minimal client-side router: the app's views and pushState navigation. This is the one place that maps
+ * a path to a view; "/" is decided by `isDashboardPath` (lib/route.ts) so the two can't disagree.
+ * The server answers /analytics with the SPA shell, so a direct load or a reload works.
  */
-export type AppRoute = 'links' | 'analytics'
+export type NavRoute = 'links' | 'analytics'
+export type AppRoute = NavRoute | 'not-found'
 
-export const ROUTE_PATHS: Record<AppRoute, string> = {
+/** Paths of the views that appear in the main navigation. */
+export const ROUTE_PATHS: Record<NavRoute, string> = {
   links: '/',
   analytics: '/analytics',
 }
 
-/** Anything that is not a known section falls back to the links dashboard. */
+/** "/" is the links dashboard, "/analytics" the analytics view, anything else is a short code that wasn't found. */
 export function routeForPath(pathname: string): AppRoute {
-  const normalized = pathname.replace(/\/+$/, '') || '/'
-  return normalized === ROUTE_PATHS.analytics ? 'analytics' : 'links'
+  if (isDashboardPath(pathname)) return 'links'
+  const normalized = pathname.replace(/\/+$/, '')
+  return normalized === ROUTE_PATHS.analytics ? 'analytics' : 'not-found'
 }
 
 const NAVIGATE_EVENT = 'app:navigate'

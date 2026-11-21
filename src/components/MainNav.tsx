@@ -1,8 +1,8 @@
 import '../styles/nav.css'
-import { ROUTE_PATHS, useRoute, type AppRoute } from '../lib/router'
+import { ROUTE_PATHS, useRoute, type NavRoute } from '../lib/router'
 import { AppLink } from './AppLink'
 
-const ITEMS: readonly { route: AppRoute; label: string }[] = [
+const ITEMS: readonly { route: NavRoute; label: string }[] = [
   { route: 'links', label: 'Links' },
   { route: 'analytics', label: 'Analytics' },
 ]
