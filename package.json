@@ -10,6 +10,7 @@
     "start": "npm run build && npm run db:migrate:local && wrangler pages dev --port 8788",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "db:seed:local": "node scripts/seed-analytics.mjs",
     "deploy": "npm run build && wrangler pages deploy",
     "lint": "oxlint",
     "preview": "vite preview"

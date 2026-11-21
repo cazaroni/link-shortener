@@ -71,8 +71,3 @@ export async function findDestination(db: D1Database, code: string): Promise<str
   const row = await db.prepare('SELECT url FROM links WHERE code = ?').bind(code).first<{ url: string }>();
   return row?.url ?? null;
 }
-
-/** Atomically bumps the click counter (a single UPDATE, so concurrent clicks are never lost). */
-export async function recordClick(db: D1Database, code: string): Promise<void> {
-  await db.prepare('UPDATE links SET clicks = clicks + 1 WHERE code = ?').bind(code).run();
-}

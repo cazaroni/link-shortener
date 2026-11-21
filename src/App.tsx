@@ -1,14 +1,17 @@
+import { AnalyticsPage } from './components/analytics/AnalyticsPage'
 import { Dashboard } from './components/Dashboard'
 import { NotFound } from './components/NotFound'
 import { SiteHeader } from './components/SiteHeader'
-import { attemptedCode, isDashboardPath } from './lib/route'
+import { attemptedCode } from './lib/route'
+import { useRoute } from './lib/router'
 
 /**
- * No router library: the app has one real page ("/"). The backend serves this same HTML with a 404
- * for unknown short codes, so any other path renders the friendly "link not found" page.
+ * Three views and no router library: the links dashboard ("/"), analytics ("/analytics") and a friendly
+ * "link not found" page for every other path (the backend serves this same HTML with a 404 for unknown
+ * short codes). See lib/router.ts for how paths map to views.
  */
 export default function App() {
-  const { pathname } = window.location
+  const route = useRoute()
 
   return (
     <>
@@ -18,7 +21,9 @@ export default function App() {
       <SiteHeader />
       <main className="page" id="main">
         <div className="container">
-          {isDashboardPath(pathname) ? <Dashboard /> : <NotFound attempted={attemptedCode(pathname)} />}
+          {route === 'links' && <Dashboard />}
+          {route === 'analytics' && <AnalyticsPage />}
+          {route === 'not-found' && <NotFound attempted={attemptedCode(window.location.pathname)} />}
         </div>
       </main>
     </>

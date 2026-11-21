@@ -14,10 +14,17 @@ export const GENERATED_CODE_LENGTH = 7;
 export const MAX_URL_LENGTH = 2048;
 
 /**
+ * Single-segment, case-sensitive paths that are views of the React app. The server answers them
+ * with the app shell and a 200 (every other unknown path is a real 404); the client router must
+ * render a view for each one. Also reserved, so they can never be short codes.
+ */
+export const SPA_ROUTES: readonly string[] = ['analytics'];
+
+/**
  * Single-segment paths that must never be treated as short codes
  * (SPA routes, API prefix, etc.). Aliases matching these (case-insensitive) are rejected.
  */
-export const RESERVED_CODES = ['api', 'assets', 'admin', 'dashboard', 'links', 'not-found', 'index', 'static'];
+export const RESERVED_CODES = ['api', ...SPA_ROUTES, 'assets', 'admin', 'dashboard', 'links', 'not-found', 'index', 'static'];
 
 export interface Link {
   code: string;
@@ -56,6 +63,7 @@ export type ApiErrorCode =
   | 'ALIAS_TAKEN'
   | 'NOT_FOUND'
   | 'METHOD_NOT_ALLOWED'
+  | 'INVALID_RANGE'
   | 'INTERNAL';
 
 /** Every non-2xx JSON response from /api/* has this shape. */

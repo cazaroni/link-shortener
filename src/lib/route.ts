@@ -1,4 +1,4 @@
-/** The dashboard lives at "/" only; every other path is treated as a short code that wasn't found. */
+/** The links dashboard lives at "/". (The other app view, "/analytics", is routed in lib/router.ts.) */
 export function isDashboardPath(pathname: string): boolean {
   return pathname === '/'
 }

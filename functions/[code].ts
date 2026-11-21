@@ -1,7 +1,8 @@
-import { CODE_PATTERN } from '../shared/api.ts';
+import { CODE_PATTERN, SPA_ROUTES } from '../shared/api.ts';
 import type { Env } from './_lib/env.ts';
 import { isReservedCode } from './_lib/codes.ts';
-import { findDestination, recordClick } from './_lib/links.ts';
+import { trackClick } from './_lib/clicks.ts';
+import { findDestination } from './_lib/links.ts';
 import { isSafeRedirectTarget } from './_lib/validation.ts';
 
 const HTML_HEADERS = {
@@ -52,6 +53,22 @@ async function notFound(request: Request, env: Env & { ASSETS: { fetch: typeof f
   return simplePage(404, 'Link not found', "We couldn't find that short link. Please check the link and try again.");
 }
 
+/**
+ * The React app's shell with a 200, for the app's own views (SPA_ROUTES). Static hosting alone can't
+ * do this: with a 404.html present it answers every path that isn't a file with a 404. Null if the
+ * shell can't be loaded, so the caller falls back to the static 404 page.
+ */
+async function spaShell(request: Request, env: Env & { ASSETS: { fetch: typeof fetch } }): Promise<Response | null> {
+  try {
+    const shell = await env.ASSETS.fetch(new URL('/', request.url));
+    if (shell.ok) return new Response(shell.body, { status: 200, headers: HTML_HEADERS });
+    console.error(`Could not load the app shell for ${new URL(request.url).pathname} (status ${shell.status}).`);
+  } catch (error) {
+    console.error(`Could not load the app shell for ${new URL(request.url).pathname}:`, error);
+  }
+  return null;
+}
+
 async function handle(context: EventContext<Env, 'code', Record<string, unknown>>): Promise<Response> {
   const { request, env } = context;
   const code = String(context.params.code);
@@ -59,7 +76,14 @@ async function handle(context: EventContext<Env, 'code', Record<string, unknown>
   // Static files at the site root (/favicon.svg, /icons.svg, ...) are served by Pages.
   if (code.includes('.')) return context.next();
 
-  // Names reserved for the app itself (SPA routes etc.) are never short links; let Pages serve them.
+  // The app's own views (/analytics, with or without a trailing slash or query string) get the shell
+  // with a 200. Exact match: /ANALYTICS is not a view, so it stays a 404 like any unknown path.
+  if (SPA_ROUTES.includes(code) && (request.method === 'GET' || request.method === 'HEAD')) {
+    const shell = await spaShell(request, env);
+    if (shell) return shell;
+  }
+
+  // Names reserved for the app itself are never short links; let Pages serve them.
   if (isReservedCode(code)) return context.next();
 
   if (request.method !== 'GET' && request.method !== 'HEAD') {
@@ -76,14 +100,11 @@ async function handle(context: EventContext<Env, 'code', Record<string, unknown>
     return notFound(request, env);
   }
 
-  // Count after responding so the redirect isn't delayed. HEAD requests (link previews,
-  // uptime checks) are answered but not counted.
+  // Count after responding so the redirect isn't delayed: the counter bump and the telemetry row
+  // are written in one batch, and a failure there is logged but never affects the redirect.
+  // HEAD requests (link previews, uptime checks) are answered but not counted.
   if (request.method === 'GET') {
-    context.waitUntil(
-      recordClick(env.DB, code).catch((error: unknown) => {
-        console.error(`Failed to record a click for "${code}":`, error);
-      }),
-    );
+    context.waitUntil(trackClick(env.DB, code, request));
   }
 
   return new Response(null, {
