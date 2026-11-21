@@ -269,11 +269,28 @@
   gap: var(--space-3);
 }
 
-.result-input {
+.result-url {
+  min-width: 0;
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   font-family: var(--font-mono);
   font-size: 1.0625rem;
   font-weight: 600;
-  min-height: 3rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.result-url a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.result-url a:hover {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
 }
 
 .result-actions {

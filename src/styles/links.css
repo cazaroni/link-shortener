@@ -166,7 +166,7 @@ a.url-text:hover {
 }
 
 /* Phone width: each row becomes a card, no sideways scrolling */
-@media (max-width: 40rem) {
+@media (max-width: 48rem) {
   .table-wrap {
     overflow: visible;
     border: 0;
