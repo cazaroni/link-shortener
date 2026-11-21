@@ -89,3 +89,6 @@ Open http://localhost:5173. Short-link redirects only happen through Wrangler (p
 | `GET /:code` | Redirects with a 302 to the original URL and adds one to its click count; unknown codes return 404 |
 
 The server only accepts `http`/`https` URLs. It rejects URLs that contain credentials, point to localhost, single-label or private network addresses, or point back at the shortener itself (including its other `*.pages.dev` preview addresses). Custom aliases must be 3–32 characters from `A–Z a–z 0–9 _ -`, and some names are reserved.
+
+## What I would do next
+Allowing users to create their own accounts so the platform goes beyond just a single user app which brings authentication into mind with ToS/privacy agreements tagging along. This in turn would require analytics to be restricted to registered accounts only as well. 
