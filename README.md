@@ -92,3 +92,6 @@ The server only accepts `http`/`https` URLs. It rejects URLs that contain creden
 
 ## What I would do next
 Allowing users to create their own accounts so the platform goes beyond just a single user app which brings authentication into mind with ToS/privacy agreements tagging along. This in turn would require analytics to be restricted to registered accounts only as well. 
+
+Start Time: 9:00 AM Arizona Time
+End Time: 10 AM Arizona Time
