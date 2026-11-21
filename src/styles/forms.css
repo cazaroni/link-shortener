@@ -32,6 +32,10 @@
   text-decoration: none;
 }
 
+.btn svg {
+  flex: none;
+}
+
 .btn--primary {
   background: var(--accent);
   color: var(--accent-contrast);

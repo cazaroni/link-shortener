@@ -1,0 +1,240 @@
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.list-count {
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+.alert--with-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* Loading / empty states */
+.state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-7) var(--space-4);
+  color: var(--text-muted);
+}
+
+.state--empty {
+  flex-direction: column;
+  gap: var(--space-2);
+  text-align: center;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+}
+
+.state-title {
+  color: var(--text);
+  font-size: 1.0625rem;
+  font-weight: 650;
+}
+
+.state--empty .btn {
+  margin-top: var(--space-3);
+}
+
+/* Table */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.links-table {
+  width: 100%;
+  min-width: 40rem;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.links-table th,
+.links-table td {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.links-table thead th {
+  background: var(--surface-muted);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.links-table tbody tr + tr td {
+  border-top: 1px solid var(--border);
+}
+
+.links-table tbody tr:hover {
+  background: var(--surface-muted);
+}
+
+.col-short {
+  width: 21rem;
+}
+
+.col-clicks {
+  width: 5.5rem;
+}
+
+.col-age {
+  width: 6.5rem;
+}
+
+.col-clicks,
+.cell-clicks {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.cell-age {
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.short {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.short-link {
+  display: flex;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  text-decoration: none;
+}
+
+.short-link:hover .short-code {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.18em;
+}
+
+.short-prefix {
+  /* Gives way first: the host is the least useful part of the link. */
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.short-code {
+  /* Never shrinks (so it can't be clipped by a fraction of a pixel); only cut off if it alone exceeds the link. */
+  flex: none;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--accent-text);
+  font-weight: 650;
+}
+
+.cell-url {
+  min-width: 0;
+}
+
+.url-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+  text-decoration: none;
+}
+
+a.url-text:hover {
+  text-decoration: underline;
+}
+
+/* Phone width: each row becomes a card, no sideways scrolling */
+@media (max-width: 40rem) {
+  .table-wrap {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .links-table,
+  .links-table tbody {
+    display: block;
+    min-width: 0;
+  }
+
+  .links-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .links-table tbody {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .links-table tbody tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3) var(--space-4);
+    padding: var(--space-4);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .links-table tbody tr:hover {
+    background: var(--surface);
+  }
+
+  .links-table td {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    border: 0 !important;
+  }
+
+  .cell-short,
+  .cell-url {
+    grid-column: 1 / -1;
+  }
+
+  /* The host adds nothing on a phone and would only be cut off; the code is what identifies the link. */
+  .short-prefix {
+    display: none;
+  }
+
+  .short-code {
+    font-size: 1.0625rem;
+  }
+
+  .links-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+  }
+
+  .cell-clicks {
+    text-align: left !important;
+  }
+}
