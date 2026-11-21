@@ -45,7 +45,7 @@ function isLink(value: unknown): value is Link {
   )
 }
 
-async function request(path: string, init?: RequestInit): Promise<unknown> {
+export async function request(path: string, init?: RequestInit): Promise<unknown> {
   let response: Response
   try {
     response = await fetch(path, {
