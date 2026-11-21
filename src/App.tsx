@@ -1,7 +1,11 @@
+import { AnalyticsPage } from './components/analytics/AnalyticsPage'
 import { Dashboard } from './components/Dashboard'
 import { SiteHeader } from './components/SiteHeader'
+import { useRoute } from './lib/router'
 
 export default function App() {
+  const route = useRoute()
+
   return (
     <>
       <a className="skip-link" href="#main">
@@ -10,7 +14,7 @@ export default function App() {
       <SiteHeader />
       <main className="page" id="main">
         <div className="container">
-          <Dashboard />
+          {route === 'analytics' ? <AnalyticsPage /> : <Dashboard />}
         </div>
       </main>
     </>

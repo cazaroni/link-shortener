@@ -1,3 +1,5 @@
+import { MainNav } from './MainNav'
+
 export function LogoMark({ size = 22 }: { size?: number }) {
   return (
     <svg
@@ -25,6 +27,7 @@ export function SiteHeader() {
           <LogoMark />
           Link Shortener
         </a>
+        <MainNav />
       </div>
     </header>
   )
