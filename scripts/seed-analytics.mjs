@@ -7,6 +7,7 @@
  *
  * Options (pass after `--`, e.g. `npm run db:seed:local -- --fresh`):
  *   --fresh      first delete ALL local links and clicks, then recreate the sample links
+ *   --persist-to <dir>  use that wrangler state directory (the one you pass to `wrangler pages dev --persist-to`)
  *   --seed <n>   random seed (default: time based, so re-runs add different clicks); the same seed
  *                gives the same data, relative to today
  *
@@ -24,7 +25,7 @@
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -35,7 +36,7 @@ const DAY_MS = 86_400_000;
 // ---------------------------------------------------------------------------
 
 function parseArgs(argv) {
-  const options = { fresh: false, seed: Date.now() % 2 ** 31 };
+  const options = { fresh: false, seed: Date.now() % 2 ** 31, persistTo: null };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--fresh') options.fresh = true;
@@ -43,7 +44,10 @@ function parseArgs(argv) {
       const value = Number(argv[++i]);
       if (!Number.isInteger(value) || value < 1) fail('--seed needs a positive whole number.');
       options.seed = value;
-    } else fail(`Unknown option "${arg}". Options: --fresh, --seed <n>.`);
+    } else if (arg === '--persist-to') {
+      if (!argv[i + 1]) fail('--persist-to needs a directory.');
+      options.persistTo = resolve(argv[++i]);
+    } else fail(`Unknown option "${arg}". Options: --fresh, --seed <n>, --persist-to <dir>.`);
   }
   return options;
 }
@@ -57,8 +61,12 @@ function fail(message) {
 // wrangler (always --local)
 // ---------------------------------------------------------------------------
 
+/** State directory given with --persist-to (absolute), or null for wrangler's default `.wrangler/state`. */
+let persistTo = null;
+
 function wrangler(args) {
-  return execFileSync('npx', ['wrangler', 'd1', 'execute', 'DB', '--local', ...args], {
+  const persist = persistTo ? ['--persist-to', persistTo] : [];
+  return execFileSync('npx', ['wrangler', 'd1', 'execute', 'DB', '--local', ...persist, ...args], {
     cwd: ROOT,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -323,6 +331,7 @@ async function loadParser() {
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
+  persistTo = options.persistTo;
   const parseUserAgent = await loadParser();
   const random = mulberry32(options.seed);
   console.log(`Using random seed ${options.seed}.`);
