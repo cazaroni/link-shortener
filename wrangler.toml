@@ -1,0 +1,12 @@
+# Cloudflare Pages project config (used by `wrangler pages dev` / `wrangler pages deploy`).
+name = "link-shortener"
+compatibility_date = "2026-11-01"
+pages_build_output_dir = "./dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "link-shortener-db"
+# Placeholder works for local dev. After `npx wrangler login`, run
+# `npx wrangler d1 create link-shortener-db` and paste the real id here.
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
